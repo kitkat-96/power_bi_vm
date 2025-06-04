@@ -1,3 +1,4 @@
 /credential.tf
 
-.terraform
+.terraform/
+
