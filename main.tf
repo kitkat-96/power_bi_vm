@@ -16,37 +16,37 @@ provider "azurerm" {
   }
 }
 
-resource "azurerm_resource_group" "glasto_RG" {
+resource "azurerm_resource_group" "power_bi_RG" {
   for_each = var.vm-locations
-  name = "glasto_RG_${each.key}"
+  name = "power_bi_RG_${each.key}"
   location = each.value
 }
 
-resource "azurerm_virtual_network" "glasto_VNET" {
-  name                = "glasto_VNET"
+resource "azurerm_virtual_network" "power_bi_VNET" {
+  name                = "power_bi_VNET"
   address_space       = ["10.0.0.0/16"]
   for_each = var.vm-locations
-  location            = azurerm_resource_group.glasto_RG[each.key].location
-  resource_group_name = azurerm_resource_group.glasto_RG[each.key].name
+  location            = azurerm_resource_group.power_bi_RG[each.key].location
+  resource_group_name = azurerm_resource_group.power_bi_RG[each.key].name
 }
 
-resource "azurerm_subnet" "glasto_SNET" {
-  name                 = "glasto_SNET"
+resource "azurerm_subnet" "power_bi_SNET" {
+  name                 = "power_bi_SNET"
   for_each = var.vm-locations
-  resource_group_name  = azurerm_resource_group.glasto_RG[each.key].name
-  virtual_network_name = azurerm_virtual_network.glasto_VNET[each.key].name
+  resource_group_name  = azurerm_resource_group.power_bi_RG[each.key].name
+  virtual_network_name = azurerm_virtual_network.power_bi_VNET[each.key].name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
-resource "azurerm_network_interface" "glasto_NI" {
-  name                = "glasto_NI"
+resource "azurerm_network_interface" "power_bi_NI" {
+  name                = "power_bi_NI"
   for_each = var.vm-locations
-  location            = azurerm_resource_group.glasto_RG[each.key].location
-  resource_group_name = azurerm_resource_group.glasto_RG[each.key].name
+  location            = azurerm_resource_group.power_bi_RG[each.key].location
+  resource_group_name = azurerm_resource_group.power_bi_RG[each.key].name
   ip_configuration {
     name                          = "internal"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.glasto_SNET[each.key].id
+    subnet_id                     = azurerm_subnet.power_bi_SNET[each.key].id
     public_ip_address_id          = azurerm_public_ip.vm_public_IP[each.key].id
   }
 }
@@ -54,22 +54,22 @@ resource "azurerm_network_interface" "glasto_NI" {
 resource "azurerm_public_ip" "vm_public_IP" {
   name                = "vm_public_IP"
   for_each = var.vm-locations
-  resource_group_name = azurerm_resource_group.glasto_RG[each.key].name
-  location            = azurerm_resource_group.glasto_RG[each.key].location
+  resource_group_name = azurerm_resource_group.power_bi_RG[each.key].name
+  location            = azurerm_resource_group.power_bi_RG[each.key].location
   allocation_method   = "Dynamic"
 
 }
 
-resource "azurerm_windows_virtual_machine" "glasto_vm" {
+resource "azurerm_windows_virtual_machine" "power_bi_vm" {
   for_each = var.vm-locations
   name                = "${each.key}"
-  resource_group_name = azurerm_resource_group.glasto_RG[each.key].name
-  location            = azurerm_resource_group.glasto_RG[each.key].location
+  resource_group_name = azurerm_resource_group.power_bi_RG[each.key].name
+  location            = azurerm_resource_group.power_bi_RG[each.key].location
   size                = "Standard_D2s_v3"
   admin_username = var.username
   admin_password = var.password
   network_interface_ids = [
-    azurerm_network_interface.glasto_NI[each.key].id,
+    azurerm_network_interface.power_bi_NI[each.key].id,
   ]
 
   os_disk {
@@ -86,11 +86,11 @@ resource "azurerm_windows_virtual_machine" "glasto_vm" {
   }
 }
 
-resource "azurerm_network_security_group" "glasto_SG" {
-  name                = "glasto_SG"
+resource "azurerm_network_security_group" "power_bi_SG" {
+  name                = "power_bi_SG"
   for_each = var.vm-locations
-  location            = azurerm_resource_group.glasto_RG[each.key].location
-  resource_group_name = azurerm_resource_group.glasto_RG[each.key].name
+  location            = azurerm_resource_group.power_bi_RG[each.key].location
+  resource_group_name = azurerm_resource_group.power_bi_RG[each.key].name
 }
 
 resource "azurerm_network_security_rule" "allow_RDP" {
@@ -104,8 +104,8 @@ resource "azurerm_network_security_rule" "allow_RDP" {
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
   for_each = var.vm-locations
-  resource_group_name         = azurerm_resource_group.glasto_RG[each.key].name
-  network_security_group_name = azurerm_network_security_group.glasto_SG[each.key].name
+  resource_group_name         = azurerm_resource_group.power_bi_RG[each.key].name
+  network_security_group_name = azurerm_network_security_group.power_bi_SG[each.key].name
 }
 
 output "vm_ips" {
