@@ -14,8 +14,6 @@ Since Power BI isn’t available natively on macOS, this project allows you to p
 * [Usage](#usage)
 * [Destroying the VM](#destroying-the-vm)
 * [Future Improvements](#future-improvements)
-* [Contributing](#contributing)
-* [License](#license)
 
 ## Prerequisites
 
